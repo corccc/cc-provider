@@ -37,14 +37,12 @@ static void *provider_rand_newctx(void *provctx, void *parent,
     if (pRandCtx != NULL) {
         pRandCtx->pProviderCtx = provctx;
     }
-    printf("pRand Context: %p\n", pRandCtx);
     return pRandCtx;
 }
 
 // This function should free any resources associated with that context.
 static void provider_rand_freectx(void *ctx) {
     provider_print("%s %d\n", __FUNCTION__ , __LINE__);
-    printf("pRand free Context: %p\n", ctx);
     provider_rand_ctx_st *pRandCtx = ctx;
     if (pRandCtx != NULL) {
         OPENSSL_clear_free(pRandCtx, sizeof(provider_rand_ctx_st));
@@ -101,7 +99,7 @@ static int provider_rand_generate(void *ctx,
         goto cleanup;
     }
     for (int i = 0; i < outlen; ++i) {
-        out[i] = 0x31;
+        out[i] = 0x01;
     }
     ret = 1;
 cleanup:

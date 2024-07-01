@@ -18,6 +18,13 @@ typedef struct
     void *pKeyPair;
 } provider_context_t;
 
+
+typedef struct {
+    uint32_t keyID;
+    uint16_t keyLen;
+    provider_context_t *pProvCtx;
+} provider_store_obj_t;
+
 // Load provider
 void load_cc_provider();
 

@@ -25,6 +25,10 @@ static const OSSL_ALGORITHM cc_rands[] = {
         {"CTR-DRBG", "provider=cc_provider", cc_rand_functions},
         {NULL, NULL, NULL}};
 
+
+// Rsa Provider
+extern const OSSL_DISPATCH  cc_rsa_keymgmt_dispatch[];
+
 // Function provider query
 static const OSSL_ALGORITHM *provider_query_operation(void *provctx, int operation_id, int *no_cache)
 {
@@ -111,6 +115,7 @@ int OSSL_provider_init(
         const OSSL_DISPATCH **out,
         void **provider_ctx)
 {
+    provider_print("%s: %d\n", __FUNCTION__, __LINE__);
     provider_context_t *ctx = OPENSSL_zalloc(sizeof(provider_context_t));
     if (ctx == NULL) {
         provider_print("OPENSSL_zalloc fail.");
