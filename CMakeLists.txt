@@ -25,12 +25,12 @@ ExternalProject_Get_Property(${OPENSSL_PROJECT_NAME} SOURCE_DIR BINARY_DIR)
 link_directories(${OPENSSL_FETCHED_DIR}/install/lib)
 # Custom Provider
 aux_source_directory(provider SRC_PROVIDER)
-add_library(cprovider SHARED ${SRC_PROVIDER})
-target_link_libraries(cprovider -lcrypto)
+add_library(provider SHARED ${SRC_PROVIDER})
+target_link_libraries(provider -lcrypto)
 
 include_directories(
         ${OPENSSL_FETCHED_DIR}/install/include
         provider)
 add_executable(se_provider main.c)
 add_dependencies(se_provider ${OPENSSL_PROJECT_NAME})
-target_link_libraries(se_provider -lcrypto cprovider)
+target_link_libraries(se_provider -lcrypto provider)

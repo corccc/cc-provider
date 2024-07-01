@@ -19,9 +19,10 @@ typedef struct
 } provider_context_t;
 
 // Load provider
-void load_provider();
+void load_cc_provider();
 
-void unload_provider();
+// Unload provider
+void unload_cc_provider();
 
 #ifdef __cplusplus
 }

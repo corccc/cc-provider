@@ -4,6 +4,7 @@
 //
 #include "provider_main.h"
 #include "provider_print.h"
+#include "openssl/conf.h"
 #include <openssl/core.h>
 #include <openssl/core_dispatch.h>
 #include <openssl/core_names.h>
@@ -17,6 +18,13 @@
 #define CC_PROVIDER_VERSION_STR   "1.0.1"
 #define CC_PROVIDER_BUILDINFO_STR "CC Provider v."
 
+
+// Random Provider
+extern const OSSL_DISPATCH  cc_rand_functions[];
+static const OSSL_ALGORITHM cc_rands[] = {
+        {"CTR-DRBG", "provider=cc_provider", cc_rand_functions},
+        {NULL, NULL, NULL}};
+
 // Function provider query
 static const OSSL_ALGORITHM *provider_query_operation(void *provctx, int operation_id, int *no_cache)
 {
@@ -25,7 +33,7 @@ static const OSSL_ALGORITHM *provider_query_operation(void *provctx, int operati
     provider_print("Enter - %s, operation_id: %d\n", __FUNCTION__, operation_id);
     switch (operation_id) {
         case OSSL_OP_RAND:
-//            return sss_rands;
+            return cc_rands;
         case OSSL_OP_KEYMGMT:
 //            return sss_keymgmts;
         case OSSL_OP_SIGNATURE:
@@ -108,57 +116,60 @@ int OSSL_provider_init(
         provider_print("OPENSSL_zalloc fail.");
         return 0;
     }
+    (void)(in);
     ctx->handle   = handle;
     *out          = provider_dispatch_table;
     *provider_ctx = ctx;
     return 1;
 }
 
-static OSSL_LIB_CTX *libctx = NULL;
-static const char *kOQSProviderName = "cprovider";
+static OSSL_LIB_CTX *libCtx = NULL;
+static const char *kProviderName = "cc_provider";
+static OSSL_PROVIDER *provider = NULL;
 
 // Load provider
-void load_provider()
+void load_cc_provider()
 {
-    if (libctx == NULL) {
-         libctx = OSSL_LIB_CTX_new();
-    }
-    int ret = OSSL_PROVIDER_available(libctx, kOQSProviderName);
+    libCtx = OSSL_LIB_CTX_new();
+    int ret = OSSL_PROVIDER_available(libCtx, kProviderName);
     if (ret != 0) {
         fprintf(stderr,
                 "`OSSL_PROVIDER_available` returned %i, but 0 was expected\n",
                 ret);
     }
-    ret = OSSL_PROVIDER_add_builtin(libctx, kOQSProviderName,
+    // 将提供者名称与提供者初始化函数相关联
+    ret = OSSL_PROVIDER_add_builtin(libCtx, kProviderName,
                                     OSSL_provider_init);
     if (ret != 1) {
         fprintf(stderr,
                 "`OSSL_PROVIDER_add_builtin` failed with returned code %i\n",
                 ret);
+    } else {
+        printf("OSSL_PROVIDER_add_builtin success.\n");
     }
 
-    OSSL_PROVIDER *provider = OSSL_PROVIDER_load(libctx, kOQSProviderName);
+    provider = OSSL_PROVIDER_load(libCtx, kProviderName);
     if (provider == NULL) {
         fputs("`OSSL_PROVIDER_load` failed\n", stderr);
         ERR_print_errors_fp(stdout);
+    } else {
+        printf("Load Provider Success.\n");
     }
 
-    ret = OSSL_PROVIDER_available(libctx, kOQSProviderName);
+    ret = OSSL_PROVIDER_available(libCtx, kProviderName);
     if (ret != 1) {
         fprintf(stderr,
                 "`OSSL_PROVIDER_available` returned %i, but 0 was expected\n",
                 ret);
+    } else {
+        printf("Provider available.\n");
     }
-
-    ret = OSSL_PROVIDER_self_test(provider);
-    if (ret != 1) {
-        fprintf(stderr,
-                "`OSSL_PROVIDER_self_test` failed with returned code %i\n",
-                ret);
-    }
+    OSSL_LIB_CTX_set0_default(libCtx);
 }
 
-void unload_provider()
+void unload_cc_provider()
 {
-
+    if (libCtx == NULL) return;
+    OSSL_PROVIDER_unload(provider);
+    OSSL_LIB_CTX_free(libCtx);
 }
